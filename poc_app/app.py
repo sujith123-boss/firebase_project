@@ -7,7 +7,7 @@ from api.resources import ProfileResource, ProfileListResource
 app = Flask(__name__)
 api = Api(app)
 
-cred = credentials.Certificate('path_to_your_service_account_key.json')
+cred = credentials.Certificate('firebasekey.json')
 firebase_admin.initialize_app(cred)
 
 api.add_resource(ProfileListResource, '/api/profiles')
