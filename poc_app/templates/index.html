@@ -1,69 +1,193 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Firebase Auth Example</title>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
     <script>
         var firebaseConfig = {
-            apiKey: "AIzaSyByOSBAihLVjcOX4JlHy-WjrlCGpMjqmUs",
-            authDomain: "auth-f633a.firebaseapp.com",
-            projectId: "auth-f633a",
-            storageBucket: "auth-f633a.appspot.com",
-            messagingSenderId: "190015523565",
-            appId: "1:190015523565:web:df40510a4ccd3f9d7f5ae4",
-            measurementId: "G-XVVWLWWY7W"
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID",
+            measurementId: "YOUR_MEASUREMENT_ID"
         };
         firebase.initializeApp(firebaseConfig);
+
+        function signUp() {
+            var email = document.getElementById('email').value;
+            var password = document.getElementById('password').value;
+            firebase.auth().createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    var user = userCredential.user;
+                    console.log('User created:', user);
+                    alert('User created successfully!');
+                    // Optionally, redirect or perform other actions after successful sign-up
+                })
+                .catch((error) => {
+                    var errorCode = error.code;
+                    var errorMessage = error.message;
+                    console.error(errorMessage);
+                    alert(errorMessage);
+                });
+        }
 
         function signIn() {
             var email = document.getElementById('email').value;
             var password = document.getElementById('password').value;
             firebase.auth().signInWithEmailAndPassword(email, password)
                 .then((userCredential) => {
-                    userCredential.user.getIdToken().then((idToken) => {
-                        document.getElementById('idToken').value = idToken;
-                        alert('Signed in successfully!');
-                    });
+                    var user = userCredential.user;
+                    console.log('User signed in:', user);
+                    alert('User signed in successfully!');
+                    // Optionally, redirect or perform other actions after successful sign-in
                 })
                 .catch((error) => {
-                    console.error(error);
-                    alert(error.message);
+                    var errorCode = error.code;
+                    var errorMessage = error.message;
+                    console.error(errorMessage);
+                    alert(errorMessage);
                 });
         }
 
-        function callAPI() {
-            var idToken = document.getElementById('idToken').value;
+        function signOut() {
+            firebase.auth().signOut()
+                .then(() => {
+                    console.log('User signed out');
+                    alert('User signed out successfully!');
+                    // Optionally, redirect or perform other actions after successful sign-out
+                })
+                .catch((error) => {
+                    console.error('Sign out error:', error);
+                    alert('Sign out error: ' + error.message);
+                });
+        }
+
+        function createProfile() {
+            var profileData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                // Add more fields as needed
+            };
+
+            var idToken = ""; // Obtain the ID token from Firebase Authentication
+
+            // Example of making a POST request to create a new profile
             fetch('/api/profiles', {
-                method: 'GET',
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + idToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(profileData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Profile created:', data);
+                alert('Profile created successfully!');
+                // Optionally, update UI or perform other actions
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error creating profile: ' + error.message);
+            });
+        }
+
+        function updateProfile() {
+            var profileId = document.getElementById('profileId').value;
+            var updatedProfileData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                // Add more fields as needed
+            };
+
+            var idToken = ""; // Obtain the ID token from Firebase Authentication
+
+            // Example of making a PUT request to update a profile
+            fetch('/api/profiles/' + profileId, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + idToken,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedProfileData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Profile updated:', data);
+                alert('Profile updated successfully!');
+                // Optionally, update UI or perform other actions
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating profile: ' + error.message);
+            });
+        }
+
+        function deleteProfile() {
+            var profileId = document.getElementById('profileId').value;
+
+            var idToken = ""; // Obtain the ID token from Firebase Authentication
+
+            // Example of making a DELETE request to delete a profile
+            fetch('/api/profiles/' + profileId, {
+                method: 'DELETE',
                 headers: {
                     'Authorization': 'Bearer ' + idToken
                 }
             })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data);
-                document.getElementById('apiResponse').innerText = JSON.stringify(data, null, 2);
+            .then(response => {
+                if (response.ok) {
+                    console.log('Profile deleted');
+                    alert('Profile deleted successfully!');
+                    // Optionally, update UI or perform other actions
+                } else {
+                    throw new Error('Failed to delete profile');
+                }
             })
-            .catch(error => console.error(error));
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error deleting profile: ' + error.message);
+            });
         }
     </script>
 </head>
 <body>
-    <h1>Firebase Auth Example</h1>
+    <h1>Firebase Authentication & Profile Management</h1>
     <div>
         <label for="email">Email:</label>
-        <input type="email" id="email" required>
+        <input type="email" id="email" name="email" required>
     </div>
     <div>
         <label for="password">Password:</label>
-        <input type="password" id="password" required>
+        <input type="password" id="password" name="password" required>
     </div>
-    <button onclick="signIn()">Sign In</button>
-    <input type="hidden" id="idToken">
-    <button onclick="callAPI()">Call API</button>
-    <pre id="apiResponse"></pre>
+    <div>
+        <button onclick="signUp()">Sign Up</button>
+        <button onclick="signIn()">Sign In</button>
+        <button onclick="signOut()">Sign Out</button>
+    </div>
+    <hr>
+    <div>
+        <h2>Profile Management</h2>
+        <div>
+            <label for="profileId">Profile ID:</label>
+            <input type="text" id="profileId" name="profileId" required>
+        </div>
+        <div>
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" required>
+        </div>
+        <div>
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" required>
+        </div>
+        <div>
+            <button onclick="createProfile()">Create Profile</button>
+            <button onclick="updateProfile()">Update Profile</button>
+            <button onclick="deleteProfile()">Delete Profile</button>
+        </div>
+    </div>
 </body>
 </html>
